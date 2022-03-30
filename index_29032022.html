@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Light Controller</title>
+		<script>
+			var lamp_state;
+			function set_data() {
+				lamp_state = 1 - lamp_state;
+				var request = new XMLHttpRequest();
+				var url = "https://api.thingspeak.com/update?api_key=TK20F25L4MU9KEWB&field1=" + lamp_state;
+				request.open('GET', url, true);
+				request.send();
+				check_state;
+			}
+			function get_data() {
+				var request = new XMLHttpRequest();
+				var url = "https://api.thingspeak.com/channels/1673641/feeds.json?api_key=X96PCNXEHWISWVKL&results=1";
+				request.open('GET', url, true);
+				request.onload = function() {
+					if (request.status >= 200 && request.status < 400) {
+						var data = request.responseText;
+						var json_feeds = JSON.parse(request.responseText).feeds;
+						lamp_state = json_feeds[0].field1;
+						check_state();
+					}
+				};
+				request.send();
+			}
+			function check_state() {
+				if (lamp_state == 1) {
+					document.getElementById("button").innerHTML = "Tắt đèn";
+					document.getElementById("image").src = "light-on.jpg";
+				} else {
+					document.getElementById("button").innerHTML = "Bật đèn";
+					document.getElementById("image").src = "light-off.jpg";
+				}
+			}
+		</script>
+	</head>
+	<body align="center" onload="setInterval(get_data, 1000)">
+		<h2>Light Controller</h2>
+		<img id="image" src="light-off.jpg">
+		<br>
+		<button type="button" id="button" onclick="set_data()">Bật đèn</button>
+	</body>
+</html>
